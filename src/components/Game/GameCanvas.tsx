@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import orangeLamboImage from "@/assets/orange-lambo.png";
 import coffeeBeanImage from "@/assets/coffee-bean.png";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 
 interface GameEntity {
   id: string;
@@ -44,6 +45,7 @@ export const GameCanvas = ({
   
   const isMobile = useIsMobile();
   const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.01); // Slower progression
+  const { toast } = useToast();
   
   // Calculate mobile car position dynamically
   const getCarYMobile = () => {
@@ -199,6 +201,16 @@ export const GameCanvas = ({
           );
           
           if (isOverlapping) {
+            // Debug toast with collision data
+            toast({
+              title: "MOBILE COLLISION DEBUG",
+              description: `Car Y: ${Math.round(carY)}, Entity Y: ${Math.round(entity.y)}, Distance: ${Math.round(distanceToCarY)}px. Screen height: ${window.innerHeight}px. Car should be at bottom!`,
+              duration: 10000
+            });
+            
+            // Stop the game for debugging
+            onGameStateChange('gameover');
+            
             onCollision(entity.type);
             setEntities(current => current.filter(e => e.id !== entity.id));
           }
