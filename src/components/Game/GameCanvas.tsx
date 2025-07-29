@@ -50,6 +50,21 @@ export const GameCanvas = ({
   const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.01); // Slower progression
   const { toast } = useToast();
   
+  // Unified position calculations - use SAME logic for rendering AND collision
+  const getCarPosition = () => {
+    if (isMobile) {
+      return {
+        x: getMobileLaneX(carLane),
+        y: getCarYMobile()
+      };
+    } else {
+      return {
+        x: CAR_X,
+        y: LANE_POSITIONS[carLane]
+      };
+    }
+  };
+
   // Calculate mobile car position dynamically
   const getCarYMobile = () => {
     if (typeof window !== 'undefined') {
@@ -62,7 +77,6 @@ export const GameCanvas = ({
   const getMobileLaneX = (laneIndex: number) => {
     if (typeof window !== 'undefined') {
       const screenWidth = window.innerWidth;
-      // 4 lanes: 16.67%, 33.33%, 50%, 66.67%, 83.33% - keeping car within safe bounds
       const positions = [
         screenWidth * 0.2, 
         screenWidth * 0.4, 
@@ -171,74 +185,31 @@ export const GameCanvas = ({
         isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50 // Remove off-screen entities
       );
       
-      // Check collisions with precise bounding box detection
+      // Check collisions with simplified logic
       updatedEntities.forEach(entity => {
-        console.log('🔍 Checking collision for entity:', entity.id, 'lane:', entity.lane, 'carLane:', carLane);
         if (entity.lane !== carLane) return; // Only check same lane
         
-        const carX = isMobile ? getMobileLaneX(carLane) : CAR_X;
-        const carY = isMobile ? getCarYMobile() : LANE_POSITIONS[carLane];
+        // Use the SAME position calculation for both rendering and collision
+        const carPos = getCarPosition();
         
-        // On mobile, only collide when entity is exactly at the car's position
-        if (isMobile) {
-          // Entity must be almost exactly at car's Y position for collision
-          const distanceToCarY = Math.abs(entity.y - carY);
-          
-          // Only collide when entity is within 5px of car position (very tight)
-          if (distanceToCarY > 5) return;
-          
-          // Tight collision boxes matching actual sprite sizes
-          const carLeft = carX - 25;  
-          const carRight = carX + 25;
-          const carTop = carY - 20;   
-          const carBottom = carY + 20;
-          
-          const entityLeft = entity.x - 12;  
-          const entityRight = entity.x + 12;
-          const entityTop = entity.y - 12;
-          const entityBottom = entity.y + 12;
-          
-          const isOverlapping = !(
-            carRight < entityLeft || 
-            carLeft > entityRight || 
-            carBottom < entityTop || 
-            carTop > entityBottom
-          );
-          
-          if (isOverlapping) {
-            if (entity.type === 'pothole') {
-              // PAUSE the game for pothole collision debugging
-              setDebugInfo(`POTHOLE HIT! Car Y: ${Math.round(carY)} | Entity Y: ${Math.round(entity.y)} | Distance: ${Math.round(Math.abs(carY - entity.y))}px`);
-              setIsPaused(true);
-              
-              // DON'T remove the entity - keep it visible for debugging
-              return; // Exit early to freeze the game state
-            } else {
-              // For coffee beans, continue normally
-              onCollision(entity.type);
-              setEntities(current => current.filter(e => e.id !== entity.id));
-            }
-          }
-        } else {
-          // Desktop collision detection
-          const carLeft = carX - 25;
-          const carRight = carX + 25;
-          const carTop = carY - 20;
-          const carBottom = carY + 20;
-          
-          const entityLeft = entity.x - 12;
-          const entityRight = entity.x + 12;
-          const entityTop = entity.y - 12;
-          const entityBottom = entity.y + 12;
-          
-          const isOverlapping = !(
-            carRight < entityLeft || 
-            carLeft > entityRight || 
-            carBottom < entityTop || 
-            carTop > entityBottom
-          );
-          
-          if (isOverlapping) {
+        // Simple distance check first
+        const distance = Math.abs(entity.y - carPos.y);
+        if (distance > 30) return; // Only check when close
+        
+        // Simple bounding box collision
+        const carSize = 25; // Half the car size
+        const entitySize = 12; // Half the entity size
+        
+        const isOverlapping = 
+          Math.abs(entity.x - carPos.x) < (carSize + entitySize) &&
+          Math.abs(entity.y - carPos.y) < (carSize + entitySize);
+        
+        if (isOverlapping) {
+          if (entity.type === 'pothole') {
+            setDebugInfo(`COLLISION! Car: (${Math.round(carPos.x)}, ${Math.round(carPos.y)}) | Entity: (${Math.round(entity.x)}, ${Math.round(entity.y)}) | Distance: ${Math.round(distance)}px`);
+            setIsPaused(true);
+            return; // Keep entity visible for debugging
+          } else {
             onCollision(entity.type);
             setEntities(current => current.filter(e => e.id !== entity.id));
           }
@@ -391,15 +362,18 @@ export const GameCanvas = ({
       {gameState === 'playing' && (
         <div
           className="absolute transition-all duration-300 ease-out"
-          style={isMobile ? {
-            left: `${getMobileLaneX(carLane)}px`,
-            top: `${getCarYMobile()}px`,
-            transform: `translate(-50%, -50%) rotate(-90deg)`
-          } : {
-            left: `${CAR_X}px`,
-            top: `${LANE_POSITIONS[carLane]}px`,
-            transform: `translateY(-50%)`
-          }}
+          style={(() => {
+            const carPos = getCarPosition();
+            return isMobile ? {
+              left: `${carPos.x}px`,
+              top: `${carPos.y}px`,
+              transform: `translate(-50%, -50%) rotate(-90deg)`
+            } : {
+              left: `${carPos.x}px`,
+              top: `${carPos.y}px`,
+              transform: `translateY(-50%)`
+            };
+          })()}
         >
           <img 
             src={orangeLamboImage}
