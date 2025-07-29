@@ -43,7 +43,7 @@ export const GameCanvas = ({
   const [carDriftAnim, setCarDriftAnim] = useState('');
   
   const isMobile = useIsMobile();
-  const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.02); // Reduced from 0.04 to 0.02
+  const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.01); // Slower progression
   
   // Calculate mobile car position dynamically
   const getCarYMobile = () => {
@@ -134,7 +134,7 @@ export const GameCanvas = ({
   const spawnEntity = useCallback(() => {
     if (gameState !== 'playing') return;
     
-    const shouldSpawnBean = Math.random() < 0.7; // 70% chance for bean, 30% for pothole
+    const shouldSpawnBean = Math.random() < 0.4; // 40% chance for bean, 60% for pothole
     const randomLane = Math.floor(Math.random() * 4);
     
     const newEntity: GameEntity = {
@@ -184,7 +184,7 @@ export const GameCanvas = ({
     });
     
     // Spawn new entities
-    if (gameTime % 60 === 0) { // Spawn every ~1 second at 60fps
+    if (gameTime % 45 === 0) { // Spawn every ~0.75 seconds at 60fps
       spawnEntity();
     }
     
