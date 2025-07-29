@@ -211,8 +211,7 @@ export const GameCanvas = ({
               setDebugInfo(`POTHOLE HIT! Car Y: ${Math.round(carY)} | Entity Y: ${Math.round(entity.y)} | Distance: ${Math.round(Math.abs(carY - entity.y))}px`);
               setIsPaused(true);
               
-              // Remove the entity that caused the collision
-              setEntities(current => current.filter(e => e.id !== entity.id));
+              // DON'T remove the entity - keep it visible for debugging
               return; // Exit early to freeze the game state
             } else {
               // For coffee beans, continue normally
