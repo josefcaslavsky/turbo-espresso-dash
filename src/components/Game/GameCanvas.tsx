@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import lamboImage from "@/assets/lambo.jpg";
+import orangeLamboImage from "@/assets/orange-lambo.png";
 import coffeeBeanImage from "@/assets/coffee-bean.png";
 
 interface GameEntity {
@@ -245,7 +245,7 @@ export const GameCanvas = ({
       {gameState === 'playing' && (
         <div
           className={cn(
-            "absolute w-16 h-10 transition-all duration-300 ease-out",
+            "absolute transition-all duration-300 ease-out",
             carDriftAnim
           )}
           style={{
@@ -254,15 +254,20 @@ export const GameCanvas = ({
             transform: `translateY(-50%)`
           }}
         >
-          <div className="w-full h-full bg-primary rounded-lg shadow-neon relative overflow-hidden">
-            <div className="absolute inset-1 bg-gradient-turbo rounded opacity-90" />
-            <div className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-          </div>
+          <img 
+            src={orangeLamboImage}
+            alt="Orange Lamborghini"
+            className="w-20 h-16 object-contain drop-shadow-lg"
+            style={{
+              filter: `drop-shadow(0 0 ${Math.floor(gameSpeed)}px hsl(var(--primary) / 0.6))`
+            }}
+          />
           
           {/* Exhaust effect when speeding */}
           {gameSpeed > 4 && (
-            <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-1">
+            <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-2">
               <div className="w-full h-full bg-gradient-to-l from-primary/60 to-transparent rounded-full animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-l from-secondary/40 to-transparent rounded-full animate-pulse delay-100" />
             </div>
           )}
         </div>

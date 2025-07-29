@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trophy, RotateCcw, Home, Zap, Coffee, Star } from "lucide-react";
-import taylorImage from "@/assets/taylor.jpg";
+import taylorImage from "@/assets/taylor-coder.png";
 
 interface GameResultsProps {
   isVictory: boolean;
@@ -54,20 +54,23 @@ export const GameResults = ({
           {isVictory ? (
             <>
               <div className="flex justify-center mb-4">
-                <img 
-                  src={taylorImage}
-                  alt="Taylor celebrating"
-                  className="w-32 h-32 rounded-full border-4 border-victory-gold shadow-glow animate-bounce-in"
-                />
+                <div className="relative">
+                  <img 
+                    src={taylorImage}
+                    alt="Taylor celebrating"
+                    className="w-32 h-32 object-cover rounded-full border-4 border-victory-gold shadow-glow animate-bounce-in"
+                  />
+                  <div className="absolute -top-2 -right-2 text-2xl animate-bounce">🎉</div>
+                </div>
               </div>
               <h1 className="text-5xl font-bold bg-gradient-to-r from-victory-gold to-primary bg-clip-text text-transparent mb-2">
                 DELIVERY COMPLETE!
               </h1>
               <p className="text-xl text-victory-gold font-medium mb-2">
-                "Perfect brew delivered! ☕"
+                "Perfect espresso delivered! ☕"
               </p>
               <p className="text-lg text-muted-foreground italic">
-                "Ready to fuel the next coding session! 🚀"
+                "Time to code with maximum caffeine! 🚀"
               </p>
             </>
           ) : (
