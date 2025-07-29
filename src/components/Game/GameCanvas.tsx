@@ -207,12 +207,15 @@ export const GameCanvas = ({
           if (isOverlapping) {
             if (entity.type === 'pothole') {
               // PAUSE the game for pothole collision debugging
-              setDebugInfo(`POTHOLE COLLISION! Can you see the pothole? Entity type: ${entity.type} | Car Y: ${Math.round(carY)} | Entity Y: ${Math.round(entity.y)} | Distance: ${Math.round(Math.abs(carY - entity.y))}px`);
+              setDebugInfo(`POTHOLE HIT! Car Y: ${Math.round(carY)} | Entity Y: ${Math.round(entity.y)} | Distance: ${Math.round(Math.abs(carY - entity.y))}px`);
               
-              // Stop the game loop by changing state to 'menu' for debugging
-              setTimeout(() => {
-                onGameStateChange('menu');
-              }, 3000);
+              // Actually stop the game loop
+              if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+              }
+              
+              // Don't call onGameStateChange to keep the game frozen
+              return; // Exit early to freeze the game state
             } else {
               // For coffee beans, continue normally
               onCollision(entity.type);
@@ -529,11 +532,11 @@ export const GameCanvas = ({
         </div>
       )}
 
-      {/* Debug overlay */}
+      {/* Debug overlay - positioned at bottom */}
       {debugInfo && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white p-4 rounded-lg z-50 max-w-xs text-center">
-          <div className="text-xl font-bold mb-2">DEBUG INFO</div>
-          <div className="text-sm">{debugInfo}</div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white p-2 rounded-lg z-50 max-w-xs text-center">
+          <div className="text-sm font-bold mb-1">DEBUG</div>
+          <div className="text-xs">{debugInfo}</div>
         </div>
       )}
 
