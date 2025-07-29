@@ -173,7 +173,9 @@ export const GameCanvas = ({
           Math.pow(entity.x - carX, 2) + Math.pow(entity.y - carY, 2)
         );
         
-        if (distance < 40 && entity.lane === carLane) {
+        // More precise collision: car is 60x48px, entities are 32x32px
+        // Only check collision if in same lane and close enough
+        if (distance < 25 && entity.lane === carLane) {
           onCollision(entity.type);
           // Remove the collided entity
           setEntities(current => current.filter(e => e.id !== entity.id));
