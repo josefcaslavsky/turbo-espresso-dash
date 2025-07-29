@@ -205,17 +205,19 @@ export const GameCanvas = ({
           );
           
           if (isOverlapping) {
-            // Set detailed debug info comparing collision vs render positions
-            const carRenderY = getCarYMobile();
-            const entityRenderY = entity.y;
-            setDebugInfo(`MISMATCH! Collision Car Y: ${Math.round(carY)} vs Render Car Y: ${Math.round(carRenderY)} | Collision Entity Y: ${Math.round(entity.y)} vs Render Entity Y: ${Math.round(entityRenderY)} | Visual Distance should be: ${Math.round(Math.abs(carRenderY - entityRenderY))}px`);
+            if (entity.type === 'pothole') {
+              // PAUSE the game for pothole collision debugging
+              setDebugInfo(`POTHOLE COLLISION! Can you see the pothole? Entity type: ${entity.type} | Car Y: ${Math.round(carY)} | Entity Y: ${Math.round(entity.y)} | Distance: ${Math.round(Math.abs(carY - entity.y))}px`);
+              
+              // Stop the game loop by changing state to 'menu' for debugging
+              setTimeout(() => {
+                onGameStateChange('menu');
+              }, 3000);
+            } else {
+              // For coffee beans, continue normally
+              onCollision(entity.type);
+            }
             
-            // Delay game over to show debug info
-            setTimeout(() => {
-              onGameStateChange('gameover');
-            }, 5000); // 5 seconds to read the debug info
-            
-            onCollision(entity.type);
             setEntities(current => current.filter(e => e.id !== entity.id));
           }
         } else {
