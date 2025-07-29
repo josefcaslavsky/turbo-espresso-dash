@@ -172,17 +172,28 @@ export const GameCanvas = ({
         const carX = isMobile ? getMobileLaneX(carLane) : CAR_X;
         const carY = isMobile ? getCarYMobile() : LANE_POSITIONS[carLane];
         
-        // Car bounding box (60x48px, centered)
-        const carLeft = carX - 30;
-        const carRight = carX + 30;
-        const carTop = carY - 24;
-        const carBottom = carY + 24;
+        // Debug logging for mobile collision issues
+        if (isMobile && Math.abs(entity.y - carY) < 100) {
+          console.log('Collision check:', {
+            entityY: entity.y,
+            carY: carY,
+            screenHeight: window.innerHeight,
+            entityLane: entity.lane,
+            carLane: carLane
+          });
+        }
         
-        // Entity bounding box (32x32px, centered)
-        const entityLeft = entity.x - 16;
-        const entityRight = entity.x + 16;
-        const entityTop = entity.y - 16;
-        const entityBottom = entity.y + 16;
+        // Car bounding box (60x48px, centered) - make it smaller for more precise collision
+        const carLeft = carX - 25;
+        const carRight = carX + 25;
+        const carTop = carY - 20;
+        const carBottom = carY + 20;
+        
+        // Entity bounding box (32x32px, centered) - make it smaller too
+        const entityLeft = entity.x - 12;
+        const entityRight = entity.x + 12;
+        const entityTop = entity.y - 12;
+        const entityBottom = entity.y + 12;
         
         // Check for overlap
         const isOverlapping = !(
@@ -193,6 +204,7 @@ export const GameCanvas = ({
         );
         
         if (isOverlapping) {
+          console.log('Collision detected!', { carY, entityY: entity.y, carLane, entityLane: entity.lane });
           onCollision(entity.type);
           // Remove the collided entity
           setEntities(current => current.filter(e => e.id !== entity.id));
