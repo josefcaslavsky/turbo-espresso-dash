@@ -21,8 +21,8 @@ interface GameCanvasProps {
   onGameStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameover') => void;
 }
 
-const LANE_POSITIONS = [120, 200, 280]; // Y positions for top, mid, bottom lanes
-const LANE_POSITIONS_MOBILE = ['20%', '50%', '80%']; // X positions for left, center, right lanes on mobile (responsive)
+const LANE_POSITIONS = [100, 160, 220, 280]; // Y positions for 4 lanes
+const LANE_POSITIONS_MOBILE = ['12.5%', '37.5%', '62.5%', '87.5%']; // X positions for 4 lanes on mobile
 const GAME_SPEED_BASE = 2;
 const CAR_X = 100; // Fixed X position of the car (desktop)
 
@@ -57,11 +57,11 @@ export const GameCanvas = ({
   const getMobileLaneX = (laneIndex: number) => {
     if (typeof window !== 'undefined') {
       const screenWidth = window.innerWidth;
-      // Center the lanes better: 16.67%, 50%, 83.33%
-      const positions = [screenWidth * 0.1667, screenWidth * 0.5, screenWidth * 0.8333];
+      // 4 lanes: 12.5%, 37.5%, 62.5%, 87.5%
+      const positions = [screenWidth * 0.125, screenWidth * 0.375, screenWidth * 0.625, screenWidth * 0.875];
       return positions[laneIndex];
     }
-    return [80, 200, 320][laneIndex]; // fallback
+    return [60, 140, 220, 300][laneIndex]; // fallback for 4 lanes
   };
 
   // Handle keyboard input
@@ -73,14 +73,14 @@ export const GameCanvas = ({
       // Mobile: left/right controls
       if ((key === 'arrowleft' || key === 'a') && carLane > 0) {
         setCarLane(prev => prev - 1);
-      } else if ((key === 'arrowright' || key === 'd') && carLane < 2) {
+      } else if ((key === 'arrowright' || key === 'd') && carLane < 3) {
         setCarLane(prev => prev + 1);
       }
     } else {
       // Desktop: up/down controls
       if ((key === 'arrowup' || key === 'w') && carLane > 0) {
         setCarLane(prev => prev - 1);
-      } else if ((key === 'arrowdown' || key === 's') && carLane < 2) {
+      } else if ((key === 'arrowdown' || key === 's') && carLane < 3) {
         setCarLane(prev => prev + 1);
       }
     }
@@ -105,8 +105,8 @@ export const GameCanvas = ({
       const touchX = touch.clientX - rect.left;
       const canvasWidth = rect.width;
       
-      const newLane = Math.floor((touchX / canvasWidth) * 3);
-      const clampedLane = Math.max(0, Math.min(2, newLane));
+      const newLane = Math.floor((touchX / canvasWidth) * 4);
+      const clampedLane = Math.max(0, Math.min(3, newLane));
       
       if (clampedLane !== carLane) {
         setCarLane(clampedLane);
@@ -116,8 +116,8 @@ export const GameCanvas = ({
       const touchY = touch.clientY - rect.top;
       const canvasHeight = rect.height;
       
-      const newLane = Math.floor((touchY / canvasHeight) * 3);
-      const clampedLane = Math.max(0, Math.min(2, newLane));
+      const newLane = Math.floor((touchY / canvasHeight) * 4);
+      const clampedLane = Math.max(0, Math.min(3, newLane));
       
       if (clampedLane !== carLane) {
         setCarLane(clampedLane);
@@ -130,7 +130,7 @@ export const GameCanvas = ({
     if (gameState !== 'playing') return;
     
     const shouldSpawnBean = Math.random() < 0.7; // 70% chance for bean, 30% for pothole
-    const randomLane = Math.floor(Math.random() * 3);
+    const randomLane = Math.floor(Math.random() * 4);
     
     const newEntity: GameEntity = {
       id: `${Date.now()}-${Math.random()}`,
@@ -273,8 +273,8 @@ export const GameCanvas = ({
         
         {/* Lane dividers */}
         {isMobile ? (
-          // Mobile: only 2 vertical lane dividers creating 3 equal lanes
-          [33.33, 66.67].map((position, index) => (
+          // Mobile: 3 vertical lane dividers creating 4 equal lanes
+          [25, 50, 75].map((position, index) => (
             <div
               key={index}
               className="absolute h-full border-l-2 border-dashed border-primary/40"
@@ -282,12 +282,12 @@ export const GameCanvas = ({
             />
           ))
         ) : (
-          // Desktop: horizontal lane dividers
+          // Desktop: 3 horizontal lane dividers creating 4 lanes
           LANE_POSITIONS.slice(0, -1).map((_, index) => (
             <div
               key={index}
               className="absolute w-full border-t-2 border-dashed border-primary/40"
-              style={{ top: `${LANE_POSITIONS[index] + 40}px` }}
+              style={{ top: `${LANE_POSITIONS[index] + 30}px` }}
             />
           ))
         )}
@@ -335,7 +335,9 @@ export const GameCanvas = ({
             className="w-20 h-16 object-contain drop-shadow-lg"
             style={{
               filter: `drop-shadow(0 0 ${Math.floor(gameSpeed)}px hsl(var(--primary) / 0.6))`,
-              imageRendering: 'pixelated' // Prevent scaling artifacts
+              imageRendering: 'pixelated', // Prevent scaling artifacts
+              width: '80px', // Fixed width to prevent scaling issues
+              height: '64px' // Fixed height to prevent scaling issues
             }}
           />
           
@@ -377,7 +379,7 @@ export const GameCanvas = ({
           style={{
             left: `${entity.x}px`,
             top: `${entity.y}px`,
-            transform: 'translateY(-50%)'
+            transform: 'translate(-50%, -50%)' // Center both horizontally and vertically
           }}
         >
           {entity.type === 'bean' && (
