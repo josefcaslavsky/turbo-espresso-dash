@@ -409,7 +409,7 @@ export const GameCanvas = ({
 
       {/* Mobile Control Buttons */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-8 md:hidden">
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 flex gap-8 md:hidden">
           <button
             onTouchStart={(e) => {
               e.preventDefault();
