@@ -40,7 +40,7 @@ export const GameCanvas = ({
   const [gameTime, setGameTime] = useState(0);
   const [carDriftAnim, setCarDriftAnim] = useState('');
   
-  const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.04);
+  const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.02); // Reduced from 0.04 to 0.02
 
   // Handle keyboard input
   const handleKeyPress = useCallback((event: KeyboardEvent) => {

@@ -49,7 +49,7 @@ export const TurboEspressoDash = () => {
     if (type === 'bean') {
       setGameStats(prev => {
         const newCaffeine = Math.min(100, prev.caffeine + 10);
-        const newSpeed = STARTING_SPEED + (newCaffeine * 4);
+        const newSpeed = STARTING_SPEED + (newCaffeine * 1.5); // Reduced from 4 to 1.5
         const newScore = prev.score + 50;
         
         return {
@@ -110,7 +110,7 @@ export const TurboEspressoDash = () => {
       intervalId = setInterval(() => {
         setGameTime(prev => prev + 1);
         setGameStats(prev => {
-          const currentSpeed = STARTING_SPEED + (prev.caffeine * 4);
+          const currentSpeed = STARTING_SPEED + (prev.caffeine * 1.5); // Reduced from 4 to 1.5
           const newDistance = prev.distance + (currentSpeed / 100); // Convert to meters
           const distanceScore = Math.floor(newDistance);
           const totalScore = distanceScore + (prev.beansCollected * 50) + Math.floor(prev.maxSpeed / 10);

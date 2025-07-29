@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trophy, Zap, Coffee } from "lucide-react";
+import taylorImage from "@/assets/taylor-coder.png";
 
 interface GameMenuProps {
   onStartGame: () => void;
@@ -28,6 +29,23 @@ export const GameMenu = ({ onStartGame, bestScore, bestDistance }: GameMenuProps
       </div>
 
       <div className="relative z-10 text-center max-w-md mx-auto">
+        {/* Taylor Introduction */}
+        <div className="mb-6 animate-bounce-in">
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <img 
+                src={taylorImage}
+                alt="Taylor the coder"
+                className="w-24 h-24 object-cover rounded-full border-3 border-primary/50 shadow-glow"
+              />
+              <div className="absolute -bottom-2 -right-2 text-lg">👨‍💻</div>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground mb-2">
+            Taylor needs his caffeine fix to keep coding!
+          </p>
+        </div>
+
         {/* Game Title */}
         <div className="mb-8 animate-bounce-in">
           <h1 className="text-6xl font-bold bg-gradient-turbo bg-clip-text text-transparent mb-2 tracking-wider">
@@ -115,7 +133,7 @@ export const GameMenu = ({ onStartGame, bestScore, bestDistance }: GameMenuProps
         </Button>
 
         <p className="text-xs text-muted-foreground mt-4 opacity-70">
-          Tip: Fill your caffeine meter to 100% for instant victory!
+          Tip: Collect beans gradually to build speed without losing control!
         </p>
       </div>
     </div>
