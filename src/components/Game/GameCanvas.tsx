@@ -21,7 +21,7 @@ interface GameCanvasProps {
   onGameStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameover') => void;
 }
 
-const LANE_POSITIONS = [100, 160, 220, 280]; // Y positions for 4 lanes
+const LANE_POSITIONS = [80, 140, 200, 260]; // Y positions for 4 lanes (more spaced out)
 const LANE_POSITIONS_MOBILE = ['12.5%', '37.5%', '62.5%', '87.5%']; // X positions for 4 lanes on mobile
 const GAME_SPEED_BASE = 2;
 const CAR_X = 100; // Fixed X position of the car (desktop)
@@ -332,12 +332,14 @@ export const GameCanvas = ({
           <img 
             src={orangeLamboImage}
             alt="Orange Lamborghini"
-            className="w-20 h-16 object-contain drop-shadow-lg"
+            className="object-contain drop-shadow-lg"
             style={{
               filter: `drop-shadow(0 0 ${Math.floor(gameSpeed)}px hsl(var(--primary) / 0.6))`,
               imageRendering: 'pixelated', // Prevent scaling artifacts
-              width: '80px', // Fixed width to prevent scaling issues
-              height: '64px' // Fixed height to prevent scaling issues
+              width: '60px', // Smaller fixed width
+              height: '48px', // Smaller fixed height
+              minWidth: '60px', // Prevent shrinking
+              maxWidth: '60px' // Prevent growing
             }}
           />
           
@@ -406,9 +408,35 @@ export const GameCanvas = ({
         </div>
       )}
 
+      {/* Caffeine meter - moved above buttons */}
+      {gameState === 'playing' && (
+        <div className={cn(
+          "absolute z-10",
+          isMobile 
+            ? "bottom-36 left-4 right-4" 
+            : "bottom-4 left-4 right-20 md:right-4"
+        )}>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-primary/30">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-medium">Caffeine</span>
+              <span className="text-xs font-bold">{caffeine}%</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-speed transition-all duration-300 ease-out shadow-glow"
+                style={{ width: `${caffeine}%` }}
+              />
+              {caffeine > 80 && (
+                <div className="absolute inset-0 bg-gradient-speed animate-pulse-neon rounded-full" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Control Buttons */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-8 md:hidden">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-8 md:hidden">
           <button
             onTouchStart={(e) => {
               e.preventDefault();
@@ -430,31 +458,6 @@ export const GameCanvas = ({
         </div>
       )}
 
-      {/* Caffeine meter */}
-      {gameState === 'playing' && (
-        <div className={cn(
-          "absolute z-10",
-          isMobile 
-            ? "bottom-20 left-4 right-4" 
-            : "bottom-4 left-4 right-20 md:right-4"
-        )}>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-3 border border-primary/30">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Caffeine</span>
-              <span className="text-sm font-bold">{caffeine}%</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-speed transition-all duration-300 ease-out shadow-glow"
-                style={{ width: `${caffeine}%` }}
-              />
-              {caffeine > 80 && (
-                <div className="absolute inset-0 bg-gradient-speed animate-pulse-neon rounded-full" />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       <canvas
         ref={canvasRef}
