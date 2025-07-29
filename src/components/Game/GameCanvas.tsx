@@ -313,9 +313,33 @@ export const GameCanvas = ({
         </div>
       )}
 
+      {/* Mobile Control Buttons */}
+      {gameState === 'playing' && (
+        <div className="absolute bottom-20 right-4 z-20 flex flex-col gap-2 md:hidden">
+          <button
+            onTouchStart={(e) => {
+              e.preventDefault();
+              handleKeyPress({ key: 'ArrowUp' } as KeyboardEvent);
+            }}
+            className="bg-card/80 backdrop-blur-sm rounded-full p-4 border-2 border-primary/50 text-primary hover:border-primary hover:bg-primary/20 transition-all duration-200 active:scale-95 touch-manipulation"
+          >
+            <div className="text-2xl font-bold">↑</div>
+          </button>
+          <button
+            onTouchStart={(e) => {
+              e.preventDefault();
+              handleKeyPress({ key: 'ArrowDown' } as KeyboardEvent);
+            }}
+            className="bg-card/80 backdrop-blur-sm rounded-full p-4 border-2 border-primary/50 text-primary hover:border-primary hover:bg-primary/20 transition-all duration-200 active:scale-95 touch-manipulation"
+          >
+            <div className="text-2xl font-bold">↓</div>
+          </button>
+        </div>
+      )}
+
       {/* Caffeine meter */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="absolute bottom-4 left-4 right-20 md:right-4">
           <div className="bg-card/80 backdrop-blur-sm rounded-lg p-3 border border-primary/30">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium">Caffeine</span>
