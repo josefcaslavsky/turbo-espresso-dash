@@ -57,11 +57,16 @@ export const GameCanvas = ({
   const getMobileLaneX = (laneIndex: number) => {
     if (typeof window !== 'undefined') {
       const screenWidth = window.innerWidth;
-      // 4 lanes: 12.5%, 37.5%, 62.5%, 87.5%
-      const positions = [screenWidth * 0.125, screenWidth * 0.375, screenWidth * 0.625, screenWidth * 0.875];
+      // 4 lanes: 16.67%, 33.33%, 50%, 66.67%, 83.33% - keeping car within safe bounds
+      const positions = [
+        screenWidth * 0.2, 
+        screenWidth * 0.4, 
+        screenWidth * 0.6, 
+        screenWidth * 0.8
+      ];
       return positions[laneIndex];
     }
-    return [60, 140, 220, 300][laneIndex]; // fallback for 4 lanes
+    return [80, 160, 240, 320][laneIndex]; // fallback for 4 lanes
   };
 
   // Handle keyboard input
@@ -408,20 +413,20 @@ export const GameCanvas = ({
         </div>
       )}
 
-      {/* Caffeine meter - moved above buttons */}
+      {/* Caffeine meter - positioned below car */}
       {gameState === 'playing' && (
         <div className={cn(
           "absolute z-10",
           isMobile 
-            ? "bottom-36 left-4 right-4" 
-            : "bottom-4 left-4 right-20 md:right-4"
+            ? "bottom-20 left-1/2 -translate-x-1/2 w-48" 
+            : "bottom-4 left-4 w-48"
         )}>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-primary/30">
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg px-3 py-1 border border-primary/30">
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs font-medium">Caffeine</span>
               <span className="text-xs font-bold">{caffeine}%</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
               <div 
                 className="h-full bg-gradient-speed transition-all duration-300 ease-out shadow-glow"
                 style={{ width: `${caffeine}%` }}
