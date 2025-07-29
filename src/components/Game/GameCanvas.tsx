@@ -25,7 +25,6 @@ const LANE_POSITIONS = [120, 200, 280]; // Y positions for top, mid, bottom lane
 const LANE_POSITIONS_MOBILE = [120, 200, 280]; // X positions for left, center, right lanes on mobile
 const GAME_SPEED_BASE = 2;
 const CAR_X = 100; // Fixed X position of the car (desktop)
-const CAR_Y_MOBILE = 320; // Fixed Y position of the car (mobile)
 
 export const GameCanvas = ({ 
   gameState, 
@@ -45,6 +44,14 @@ export const GameCanvas = ({
   
   const isMobile = useIsMobile();
   const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.02); // Reduced from 0.04 to 0.02
+  
+  // Calculate mobile car position dynamically
+  const getCarYMobile = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerHeight - 180;
+    }
+    return 640; // fallback for SSR
+  };
 
   // Handle keyboard input
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
@@ -151,13 +158,13 @@ export const GameCanvas = ({
         x: isMobile ? entity.x : entity.x - gameSpeed * 3, // Desktop: move left, Mobile: stay in lane
         y: isMobile ? entity.y + gameSpeed * 3 : entity.y  // Mobile: move down, Desktop: stay in lane
       })).filter(entity => 
-        isMobile ? entity.y < 450 : entity.x > -50 // Remove off-screen entities
+        isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50 // Remove off-screen entities
       );
       
       // Check collisions
       updatedEntities.forEach(entity => {
         const carX = isMobile ? LANE_POSITIONS_MOBILE[carLane] : CAR_X;
-        const carY = isMobile ? CAR_Y_MOBILE : LANE_POSITIONS[carLane];
+        const carY = isMobile ? getCarYMobile() : LANE_POSITIONS[carLane];
         const distance = Math.sqrt(
           Math.pow(entity.x - carX, 2) + Math.pow(entity.y - carY, 2)
         );
@@ -234,7 +241,10 @@ export const GameCanvas = ({
   }, [handleKeyPress, handleTouchStart, handleTouchMove]);
 
   return (
-    <div className="relative w-full h-96 bg-gradient-road overflow-hidden rounded-lg border border-primary/30">
+    <div className={cn(
+      "relative w-full overflow-hidden rounded-lg border border-primary/30",
+      isMobile ? "h-screen bg-gradient-road" : "h-96 bg-gradient-road"
+    )}>
       {/* Road lanes */}
       <div className="absolute inset-0">
         {/* Road lines */}
@@ -315,7 +325,7 @@ export const GameCanvas = ({
           )}
           style={isMobile ? {
             left: `${LANE_POSITIONS_MOBILE[carLane]}px`,
-            top: `${CAR_Y_MOBILE}px`,
+            top: `${getCarYMobile()}px`,
             transform: `translate(-50%, -50%) ${isMobile ? 'rotate(-90deg)' : ''}`
           } : {
             left: `${CAR_X}px`,
@@ -423,7 +433,12 @@ export const GameCanvas = ({
 
       {/* Caffeine meter */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-4 left-4 right-20 md:right-4">
+        <div className={cn(
+          "absolute z-10",
+          isMobile 
+            ? "bottom-20 left-4 right-4" 
+            : "bottom-4 left-4 right-20 md:right-4"
+        )}>
           <div className="bg-card/80 backdrop-blur-sm rounded-lg p-3 border border-primary/30">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium">Caffeine</span>
