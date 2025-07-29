@@ -35,6 +35,7 @@ export const GameCanvas = ({
   distance, 
   onGameStateChange 
 }: GameCanvasProps) => {
+  console.log('🚗 GameCanvas component loaded - THIS IS THE RIGHT FILE!');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const [carLane, setCarLane] = useState(1); // 0 = top, 1 = middle, 2 = bottom
