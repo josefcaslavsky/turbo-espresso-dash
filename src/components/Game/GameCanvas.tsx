@@ -152,6 +152,7 @@ export const GameCanvas = ({
 
   // Game loop
   const gameLoop = useCallback(() => {
+    console.log('🎮 Game loop running, state:', gameState, 'isMobile:', isMobile);
     if (gameState !== 'playing') return;
     
     setGameTime(prev => prev + 1);
@@ -169,6 +170,7 @@ export const GameCanvas = ({
       
       // Check collisions with precise bounding box detection
       updatedEntities.forEach(entity => {
+        console.log('🔍 Checking collision for entity:', entity.id, 'lane:', entity.lane, 'carLane:', carLane);
         if (entity.lane !== carLane) return; // Only check same lane
         
         const carX = isMobile ? getMobileLaneX(carLane) : CAR_X;
