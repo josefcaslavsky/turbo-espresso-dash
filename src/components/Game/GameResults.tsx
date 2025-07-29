@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trophy, RotateCcw, Home, Zap, Coffee, Star } from "lucide-react";
-import taylorImage from "@/assets/taylor-coder.png";
+import taylorImage from "/lovable-uploads/c0bd7a00-4d8d-421b-9b84-7a6fee320559.png";
 
 interface GameResultsProps {
   isVictory: boolean;
