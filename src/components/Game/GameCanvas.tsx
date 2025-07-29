@@ -165,17 +165,34 @@ export const GameCanvas = ({
         isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50 // Remove off-screen entities
       );
       
-      // Check collisions
+      // Check collisions with precise bounding box detection
       updatedEntities.forEach(entity => {
+        if (entity.lane !== carLane) return; // Only check same lane
+        
         const carX = isMobile ? getMobileLaneX(carLane) : CAR_X;
         const carY = isMobile ? getCarYMobile() : LANE_POSITIONS[carLane];
-        const distance = Math.sqrt(
-          Math.pow(entity.x - carX, 2) + Math.pow(entity.y - carY, 2)
+        
+        // Car bounding box (60x48px, centered)
+        const carLeft = carX - 30;
+        const carRight = carX + 30;
+        const carTop = carY - 24;
+        const carBottom = carY + 24;
+        
+        // Entity bounding box (32x32px, centered)
+        const entityLeft = entity.x - 16;
+        const entityRight = entity.x + 16;
+        const entityTop = entity.y - 16;
+        const entityBottom = entity.y + 16;
+        
+        // Check for overlap
+        const isOverlapping = !(
+          carRight < entityLeft || 
+          carLeft > entityRight || 
+          carBottom < entityTop || 
+          carTop > entityBottom
         );
         
-        // More precise collision: car is 60x48px, entities are 32x32px
-        // Only check collision if in same lane and close enough
-        if (distance < 25 && entity.lane === carLane) {
+        if (isOverlapping) {
           onCollision(entity.type);
           // Remove the collided entity
           setEntities(current => current.filter(e => e.id !== entity.id));
