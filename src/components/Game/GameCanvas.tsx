@@ -43,6 +43,7 @@ export const GameCanvas = ({
   const [roadOffset, setRoadOffset] = useState(0);
   const [gameTime, setGameTime] = useState(0);
   const [carDriftAnim, setCarDriftAnim] = useState('');
+  const [debugInfo, setDebugInfo] = useState('');
   
   const isMobile = useIsMobile();
   const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.01); // Slower progression
@@ -204,29 +205,13 @@ export const GameCanvas = ({
           );
           
           if (isOverlapping) {
-            // Console debug data that survives state changes
-            console.log('🔴 MOBILE COLLISION DEBUG:', {
-              carY: Math.round(carY),
-              entityY: Math.round(entity.y), 
-              distance: Math.round(distanceToCarY),
-              screenHeight: window.innerHeight,
-              carAtBottom: carY === (window.innerHeight - 180),
-              entityPosition: { x: entity.x, y: entity.y },
-              carPosition: { x: carX, y: carY },
-              entityType: entity.type
-            });
+            // Set visible debug info
+            setDebugInfo(`COLLISION! Car Y: ${Math.round(carY)}, Entity Y: ${Math.round(entity.y)}, Distance: ${Math.round(distanceToCarY)}px, Screen: ${window.innerHeight}px`);
             
-            // Debug toast with collision data
-            toast({
-              title: "🔴 MOBILE COLLISION DEBUG",
-              description: `Car Y: ${Math.round(carY)}, Entity Y: ${Math.round(entity.y)}, Distance: ${Math.round(distanceToCarY)}px. Screen: ${window.innerHeight}px`,
-              duration: 5000
-            });
-            
-            // Delay game over to allow toast to show
+            // Delay game over to show debug info
             setTimeout(() => {
               onGameStateChange('gameover');
-            }, 100);
+            }, 3000); // 3 seconds to read the debug info
             
             onCollision(entity.type);
             setEntities(current => current.filter(e => e.id !== entity.id));
@@ -537,6 +522,14 @@ export const GameCanvas = ({
           >
             <div className="text-xl font-bold">→</div>
           </button>
+        </div>
+      )}
+
+      {/* Debug overlay */}
+      {debugInfo && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white p-4 rounded-lg z-50 max-w-xs text-center">
+          <div className="text-xl font-bold mb-2">DEBUG INFO</div>
+          <div className="text-sm">{debugInfo}</div>
         </div>
       )}
 
