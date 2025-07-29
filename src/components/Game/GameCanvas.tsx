@@ -72,23 +72,15 @@ export const GameCanvas = ({
       // Mobile: left/right controls
       if ((key === 'arrowleft' || key === 'a') && carLane > 0) {
         setCarLane(prev => prev - 1);
-        setCarDriftAnim('animate-drift-left');
-        setTimeout(() => setCarDriftAnim(''), 300);
       } else if ((key === 'arrowright' || key === 'd') && carLane < 2) {
         setCarLane(prev => prev + 1);
-        setCarDriftAnim('animate-drift-right');
-        setTimeout(() => setCarDriftAnim(''), 300);
       }
     } else {
       // Desktop: up/down controls
       if ((key === 'arrowup' || key === 'w') && carLane > 0) {
         setCarLane(prev => prev - 1);
-        setCarDriftAnim('animate-drift-left');
-        setTimeout(() => setCarDriftAnim(''), 300);
       } else if ((key === 'arrowdown' || key === 's') && carLane < 2) {
         setCarLane(prev => prev + 1);
-        setCarDriftAnim('animate-drift-right');
-        setTimeout(() => setCarDriftAnim(''), 300);
       }
     }
   }, [gameState, carLane, isMobile]);
@@ -117,8 +109,6 @@ export const GameCanvas = ({
       
       if (clampedLane !== carLane) {
         setCarLane(clampedLane);
-        setCarDriftAnim(clampedLane > carLane ? 'animate-drift-right' : 'animate-drift-left');
-        setTimeout(() => setCarDriftAnim(''), 300);
       }
     } else {
       // Desktop: vertical lanes (up/down)
@@ -130,8 +120,6 @@ export const GameCanvas = ({
       
       if (clampedLane !== carLane) {
         setCarLane(clampedLane);
-        setCarDriftAnim(clampedLane > carLane ? 'animate-drift-right' : 'animate-drift-left');
-        setTimeout(() => setCarDriftAnim(''), 300);
       }
     }
   }, [gameState, carLane, isMobile]);
@@ -284,12 +272,12 @@ export const GameCanvas = ({
         
         {/* Lane dividers */}
         {isMobile ? (
-          // Mobile: vertical lane dividers
-          [0, 1].map((index) => (
+          // Mobile: vertical lane dividers - evenly spaced
+          [33.33, 66.66].map((position, index) => (
             <div
               key={index}
-              className="absolute h-full border-l border-dashed border-primary/20"
-              style={{ left: `${(index + 1) * 33.33}%` }}
+              className="absolute h-full border-l-2 border-dashed border-primary/30"
+              style={{ left: `${position}%` }}
             />
           ))
         ) : (
@@ -297,7 +285,7 @@ export const GameCanvas = ({
           LANE_POSITIONS.slice(0, -1).map((_, index) => (
             <div
               key={index}
-              className="absolute w-full border-t border-dashed border-primary/20"
+              className="absolute w-full border-t-2 border-dashed border-primary/30"
               style={{ top: `${LANE_POSITIONS[index] + 40}px` }}
             />
           ))
@@ -329,14 +317,11 @@ export const GameCanvas = ({
       {/* Car */}
       {gameState === 'playing' && (
         <div
-          className={cn(
-            "absolute transition-all duration-300 ease-out",
-            carDriftAnim
-          )}
+          className="absolute transition-all duration-300 ease-out"
           style={isMobile ? {
             left: `${getMobileLaneX(carLane)}px`,
             top: `${getCarYMobile()}px`,
-            transform: `translate(-50%, -50%) ${isMobile ? 'rotate(-90deg)' : ''}`
+            transform: `translate(-50%, -50%) rotate(-90deg)`
           } : {
             left: `${CAR_X}px`,
             top: `${LANE_POSITIONS[carLane]}px`,
