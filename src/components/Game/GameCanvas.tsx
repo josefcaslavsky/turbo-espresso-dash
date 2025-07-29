@@ -172,23 +172,22 @@ export const GameCanvas = ({
         const carX = isMobile ? getMobileLaneX(carLane) : CAR_X;
         const carY = isMobile ? getCarYMobile() : LANE_POSITIONS[carLane];
         
-        // On mobile, entities need to be much closer to the car's visual position
-        // since the car is at the bottom of the screen
+        // On mobile, entities need to be very close to the car at bottom of screen
         if (isMobile) {
-          // Only check collision when entity is very close to car position
+          // Only check collision when entity is extremely close to car position (within 15px)
           const distanceToCarY = Math.abs(entity.y - carY);
-          if (distanceToCarY > 40) return; // Skip if too far away
+          if (distanceToCarY > 15) return; // Much tighter distance check
           
-          // Tighter collision boxes for mobile
-          const carLeft = carX - 20;
-          const carRight = carX + 20;
-          const carTop = carY - 15;
-          const carBottom = carY + 15;
+          // Very tight collision boxes for mobile - only when really touching
+          const carLeft = carX - 15;
+          const carRight = carX + 15;
+          const carTop = carY - 10;
+          const carBottom = carY + 10;
           
-          const entityLeft = entity.x - 10;
-          const entityRight = entity.x + 10;
-          const entityTop = entity.y - 10;
-          const entityBottom = entity.y + 10;
+          const entityLeft = entity.x - 8;
+          const entityRight = entity.x + 8;
+          const entityTop = entity.y - 8;
+          const entityBottom = entity.y + 8;
           
           const isOverlapping = !(
             carRight < entityLeft || 
