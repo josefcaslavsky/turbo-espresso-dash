@@ -18,11 +18,16 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        turbo: "bg-gradient-turbo text-primary-foreground hover:shadow-neon transform hover:scale-105 transition-all duration-300 font-bold tracking-wide",
+        electric: "bg-gradient-electric text-secondary-foreground hover:shadow-electric transform hover:scale-105 transition-all duration-300 font-bold",
+        neon: "bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground hover:shadow-neon transition-all duration-300",
+        game: "bg-card/50 backdrop-blur-sm border border-primary/30 text-foreground hover:bg-primary/20 hover:border-primary transition-all duration-300"
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
+        xl: "h-14 rounded-lg px-12 text-lg",
         icon: "h-10 w-10",
       },
     },
