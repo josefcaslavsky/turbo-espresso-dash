@@ -44,6 +44,7 @@ export const GameCanvas = ({
   const [gameTime, setGameTime] = useState(0);
   const [carDriftAnim, setCarDriftAnim] = useState('');
   const [debugInfo, setDebugInfo] = useState('');
+  const [isPaused, setIsPaused] = useState(false);
   
   const isMobile = useIsMobile();
   const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.01); // Slower progression
@@ -155,7 +156,7 @@ export const GameCanvas = ({
   // Game loop
   const gameLoop = useCallback(() => {
     console.log('🎮 Game loop running, state:', gameState, 'isMobile:', isMobile);
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || isPaused) return;
     
     setGameTime(prev => prev + 1);
     setRoadOffset(prev => (prev + gameSpeed) % 200);
@@ -208,20 +209,16 @@ export const GameCanvas = ({
             if (entity.type === 'pothole') {
               // PAUSE the game for pothole collision debugging
               setDebugInfo(`POTHOLE HIT! Car Y: ${Math.round(carY)} | Entity Y: ${Math.round(entity.y)} | Distance: ${Math.round(Math.abs(carY - entity.y))}px`);
+              setIsPaused(true);
               
-              // Actually stop the game loop
-              if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-              }
-              
-              // Don't call onGameStateChange to keep the game frozen
+              // Remove the entity that caused the collision
+              setEntities(current => current.filter(e => e.id !== entity.id));
               return; // Exit early to freeze the game state
             } else {
               // For coffee beans, continue normally
               onCollision(entity.type);
+              setEntities(current => current.filter(e => e.id !== entity.id));
             }
-            
-            setEntities(current => current.filter(e => e.id !== entity.id));
           }
         } else {
           // Desktop collision detection
@@ -264,7 +261,7 @@ export const GameCanvas = ({
     }
     
     animationRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, gameSpeed, gameTime, carLane, onCollision, spawnEntity, caffeine, onGameStateChange]);
+  }, [gameState, gameSpeed, gameTime, carLane, onCollision, spawnEntity, caffeine, onGameStateChange, isPaused]);
 
   // Initialize game loop
   useEffect(() => {
@@ -291,6 +288,8 @@ export const GameCanvas = ({
       setRoadOffset(0);
       setGameTime(0);
       setCarDriftAnim('');
+      setIsPaused(false);
+      setDebugInfo('');
     }
   }, [gameState]);
 
