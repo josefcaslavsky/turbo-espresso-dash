@@ -22,7 +22,7 @@ interface GameCanvasProps {
 }
 
 const LANE_POSITIONS = [120, 200, 280]; // Y positions for top, mid, bottom lanes
-const LANE_POSITIONS_MOBILE = [120, 200, 280]; // X positions for left, center, right lanes on mobile
+const LANE_POSITIONS_MOBILE = ['20%', '50%', '80%']; // X positions for left, center, right lanes on mobile (responsive)
 const GAME_SPEED_BASE = 2;
 const CAR_X = 100; // Fixed X position of the car (desktop)
 
@@ -51,6 +51,16 @@ export const GameCanvas = ({
       return window.innerHeight - 180;
     }
     return 640; // fallback for SSR
+  };
+
+  // Calculate mobile lane X positions dynamically
+  const getMobileLaneX = (laneIndex: number) => {
+    if (typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      const positions = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8];
+      return positions[laneIndex];
+    }
+    return [80, 200, 320][laneIndex]; // fallback
   };
 
   // Handle keyboard input
@@ -135,7 +145,7 @@ export const GameCanvas = ({
     
     const newEntity: GameEntity = {
       id: `${Date.now()}-${Math.random()}`,
-      x: isMobile ? LANE_POSITIONS_MOBILE[randomLane] : 800, // Mobile: spawn in lane X, Desktop: spawn off-screen right
+      x: isMobile ? getMobileLaneX(randomLane) : 800, // Mobile: spawn in lane X, Desktop: spawn off-screen right
       y: isMobile ? -50 : LANE_POSITIONS[randomLane], // Mobile: spawn off-screen top, Desktop: spawn in lane Y
       lane: randomLane,
       type: shouldSpawnBean ? 'bean' : 'pothole'
@@ -163,7 +173,7 @@ export const GameCanvas = ({
       
       // Check collisions
       updatedEntities.forEach(entity => {
-        const carX = isMobile ? LANE_POSITIONS_MOBILE[carLane] : CAR_X;
+        const carX = isMobile ? getMobileLaneX(carLane) : CAR_X;
         const carY = isMobile ? getCarYMobile() : LANE_POSITIONS[carLane];
         const distance = Math.sqrt(
           Math.pow(entity.x - carX, 2) + Math.pow(entity.y - carY, 2)
@@ -275,11 +285,11 @@ export const GameCanvas = ({
         {/* Lane dividers */}
         {isMobile ? (
           // Mobile: vertical lane dividers
-          LANE_POSITIONS_MOBILE.slice(0, -1).map((_, index) => (
+          [0, 1].map((index) => (
             <div
               key={index}
               className="absolute h-full border-l border-dashed border-primary/20"
-              style={{ left: `${LANE_POSITIONS_MOBILE[index] + 40}px` }}
+              style={{ left: `${(index + 1) * 33.33}%` }}
             />
           ))
         ) : (
@@ -324,7 +334,7 @@ export const GameCanvas = ({
             carDriftAnim
           )}
           style={isMobile ? {
-            left: `${LANE_POSITIONS_MOBILE[carLane]}px`,
+            left: `${getMobileLaneX(carLane)}px`,
             top: `${getCarYMobile()}px`,
             transform: `translate(-50%, -50%) ${isMobile ? 'rotate(-90deg)' : ''}`
           } : {
@@ -409,7 +419,7 @@ export const GameCanvas = ({
 
       {/* Mobile Control Buttons */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 flex gap-8 md:hidden">
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-8 md:hidden">
           <button
             onTouchStart={(e) => {
               e.preventDefault();
