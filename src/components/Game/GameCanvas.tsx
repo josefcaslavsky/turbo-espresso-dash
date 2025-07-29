@@ -57,7 +57,8 @@ export const GameCanvas = ({
   const getMobileLaneX = (laneIndex: number) => {
     if (typeof window !== 'undefined') {
       const screenWidth = window.innerWidth;
-      const positions = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8];
+      // Center the lanes better: 16.67%, 50%, 83.33%
+      const positions = [screenWidth * 0.1667, screenWidth * 0.5, screenWidth * 0.8333];
       return positions[laneIndex];
     }
     return [80, 200, 320][laneIndex]; // fallback
@@ -247,22 +248,22 @@ export const GameCanvas = ({
       <div className="absolute inset-0">
         {/* Road lines */}
         <div 
-          className="absolute top-0 left-0 w-full h-full opacity-30"
+          className="absolute top-0 left-0 w-full h-full opacity-20"
           style={{
             backgroundImage: isMobile 
               ? `repeating-linear-gradient(
-                  90deg,
-                  transparent,
-                  transparent 60px,
-                  hsl(var(--primary) / 0.3) 60px,
-                  hsl(var(--primary) / 0.3) 62px
-                )`
-              : `repeating-linear-gradient(
                   0deg,
                   transparent,
-                  transparent 60px,
-                  hsl(var(--primary) / 0.3) 60px,
-                  hsl(var(--primary) / 0.3) 62px
+                  transparent 40px,
+                  hsl(var(--primary) / 0.3) 40px,
+                  hsl(var(--primary) / 0.3) 44px
+                )`
+              : `repeating-linear-gradient(
+                  90deg,
+                  transparent,
+                  transparent 40px,
+                  hsl(var(--primary) / 0.3) 40px,
+                  hsl(var(--primary) / 0.3) 44px
                 )`,
             transform: isMobile 
               ? `translateY(-${roadOffset}px)` 
@@ -272,11 +273,11 @@ export const GameCanvas = ({
         
         {/* Lane dividers */}
         {isMobile ? (
-          // Mobile: vertical lane dividers - evenly spaced
-          [33.33, 66.66].map((position, index) => (
+          // Mobile: only 2 vertical lane dividers creating 3 equal lanes
+          [33.33, 66.67].map((position, index) => (
             <div
               key={index}
-              className="absolute h-full border-l-2 border-dashed border-primary/30"
+              className="absolute h-full border-l-2 border-dashed border-primary/40"
               style={{ left: `${position}%` }}
             />
           ))
@@ -285,7 +286,7 @@ export const GameCanvas = ({
           LANE_POSITIONS.slice(0, -1).map((_, index) => (
             <div
               key={index}
-              className="absolute w-full border-t-2 border-dashed border-primary/30"
+              className="absolute w-full border-t-2 border-dashed border-primary/40"
               style={{ top: `${LANE_POSITIONS[index] + 40}px` }}
             />
           ))
@@ -333,7 +334,8 @@ export const GameCanvas = ({
             alt="Orange Lamborghini"
             className="w-20 h-16 object-contain drop-shadow-lg"
             style={{
-              filter: `drop-shadow(0 0 ${Math.floor(gameSpeed)}px hsl(var(--primary) / 0.6))`
+              filter: `drop-shadow(0 0 ${Math.floor(gameSpeed)}px hsl(var(--primary) / 0.6))`,
+              imageRendering: 'pixelated' // Prevent scaling artifacts
             }}
           />
           
