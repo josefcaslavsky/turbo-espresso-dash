@@ -201,15 +201,29 @@ export const GameCanvas = ({
           );
           
           if (isOverlapping) {
-            // Debug toast with collision data
-            toast({
-              title: "MOBILE COLLISION DEBUG",
-              description: `Car Y: ${Math.round(carY)}, Entity Y: ${Math.round(entity.y)}, Distance: ${Math.round(distanceToCarY)}px. Screen height: ${window.innerHeight}px. Car should be at bottom!`,
-              duration: 10000
+            // Console debug data that survives state changes
+            console.log('🔴 MOBILE COLLISION DEBUG:', {
+              carY: Math.round(carY),
+              entityY: Math.round(entity.y), 
+              distance: Math.round(distanceToCarY),
+              screenHeight: window.innerHeight,
+              carAtBottom: carY === (window.innerHeight - 180),
+              entityPosition: { x: entity.x, y: entity.y },
+              carPosition: { x: carX, y: carY },
+              entityType: entity.type
             });
             
-            // Stop the game for debugging
-            onGameStateChange('gameover');
+            // Debug toast with collision data
+            toast({
+              title: "🔴 MOBILE COLLISION DEBUG",
+              description: `Car Y: ${Math.round(carY)}, Entity Y: ${Math.round(entity.y)}, Distance: ${Math.round(distanceToCarY)}px. Screen: ${window.innerHeight}px`,
+              duration: 5000
+            });
+            
+            // Delay game over to allow toast to show
+            setTimeout(() => {
+              onGameStateChange('gameover');
+            }, 100);
             
             onCollision(entity.type);
             setEntities(current => current.filter(e => e.id !== entity.id));
