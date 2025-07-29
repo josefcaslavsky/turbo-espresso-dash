@@ -174,9 +174,22 @@ export const GameCanvas = ({
         
         // On mobile, entities need to be very close to the car at bottom of screen
         if (isMobile) {
-          // Only check collision when entity is extremely close to car position (within 15px)
           const distanceToCarY = Math.abs(entity.y - carY);
+          
+          // Debug logging
+          console.log('Mobile collision check:', {
+            entityY: entity.y,
+            carY: carY,
+            distance: distanceToCarY,
+            screenHeight: window.innerHeight,
+            entityLane: entity.lane,
+            carLane: carLane
+          });
+          
+          // Only check collision when entity is extremely close to car position (within 15px)
           if (distanceToCarY > 15) return; // Much tighter distance check
+          
+          console.log('Within distance range, checking collision boxes...');
           
           // Very tight collision boxes for mobile - only when really touching
           const carLeft = carX - 15;
@@ -197,6 +210,7 @@ export const GameCanvas = ({
           );
           
           if (isOverlapping) {
+            console.log('COLLISION DETECTED!', { carY, entityY: entity.y, distance: distanceToCarY });
             onCollision(entity.type);
             setEntities(current => current.filter(e => e.id !== entity.id));
           }
