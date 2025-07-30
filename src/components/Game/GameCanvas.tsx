@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import orangeLamboImage from "@/assets/orange-lambo.png";
+import orangeLamboImage from "@/assets/orange-lambo-top.png";
 import coffeeBeanImage from "@/assets/coffee-bean.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
