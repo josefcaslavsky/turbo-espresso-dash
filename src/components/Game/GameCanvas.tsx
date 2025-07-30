@@ -35,7 +35,7 @@ export const GameCanvas = ({
   distance, 
   onGameStateChange 
 }: GameCanvasProps) => {
-  console.log('🚗 GameCanvas component loaded - THIS IS THE RIGHT FILE!');
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const [carLane, setCarLane] = useState(1); // 0 = top, 1 = middle, 2 = bottom
@@ -43,7 +43,6 @@ export const GameCanvas = ({
   const [roadOffset, setRoadOffset] = useState(0);
   const [gameTime, setGameTime] = useState(0);
   const [carDriftAnim, setCarDriftAnim] = useState('');
-  const [debugInfo, setDebugInfo] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   
   const isMobile = useIsMobile();
@@ -169,7 +168,6 @@ export const GameCanvas = ({
 
   // Game loop
   const gameLoop = useCallback(() => {
-    console.log('🎮 Game loop running, state:', gameState, 'isMobile:', isMobile);
     if (gameState !== 'playing' || isPaused) return;
     
     setGameTime(prev => prev + 1);
@@ -216,7 +214,6 @@ export const GameCanvas = ({
         
         if (isNear) {
           if (entity.type === 'pothole') {
-            setDebugInfo(`COLLISION! Car lane ${carLane} at (${Math.round(carPos.x)}, ${Math.round(carPos.y)}) | Entity lane ${entity.lane} at (${Math.round(entity.x)}, ${Math.round(entity.y)})`);
             setIsPaused(true);
             hasCollision = true;
             collisionEntity = entity;
@@ -272,7 +269,6 @@ export const GameCanvas = ({
       setGameTime(0);
       setCarDriftAnim('');
       setIsPaused(false);
-      setDebugInfo('');
     }
   }, [gameState]);
 
@@ -449,37 +445,8 @@ export const GameCanvas = ({
           {entity.type === 'pothole' && (
             <div className="w-full h-full bg-destructive/80 rounded-full border-2 border-destructive-foreground" />
           )}
-          
-          {/* Visual collision box for debugging */}
-          {isPaused && (
-            <div 
-              className="absolute border-2 border-yellow-400 bg-yellow-400/20"
-              style={{
-                left: '-12px',
-                top: '-12px', 
-                width: '24px',
-                height: '24px'
-              }}
-            />
-          )}
         </div>
       ))}
-
-      {/* Car collision box for debugging */}
-      {gameState === 'playing' && isPaused && (
-        <div
-          className="absolute border-2 border-red-400 bg-red-400/20"
-          style={(() => {
-            const carPos = getCarPosition();
-            return {
-              left: `${carPos.x - 25}px`,
-              top: `${carPos.y - 25}px`,
-              width: '50px',
-              height: '50px'
-            };
-          })()}
-        />
-      )}
 
       {/* UI Overlay */}
       {gameState === 'playing' && (
@@ -545,15 +512,6 @@ export const GameCanvas = ({
           </button>
         </div>
       )}
-
-      {/* Debug overlay - positioned at bottom */}
-      {debugInfo && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white p-2 rounded-lg z-50 max-w-xs text-center">
-          <div className="text-sm font-bold mb-1">DEBUG</div>
-          <div className="text-xs">{debugInfo}</div>
-        </div>
-      )}
-
 
       <canvas
         ref={canvasRef}
