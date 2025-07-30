@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
 import orangeLamboImage from "@/assets/orange-lambo.png";
-import coffeeBeanImage from "@/assets/coffee-bean.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface GameEntity {
   id: string;
@@ -20,22 +19,23 @@ interface GameCanvasProps {
   score: number;
   distance: number;
   onGameStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameover') => void;
+  baseSpeed: number;
 }
 
 const LANE_POSITIONS = [80, 140, 200, 260]; // Y positions for 4 lanes (more spaced out)
 const LANE_POSITIONS_MOBILE = ['12.5%', '37.5%', '62.5%', '87.5%']; // X positions for 4 lanes on mobile
-const GAME_SPEED_BASE = 2;
 const CAR_X = 100; // Fixed X position of the car (desktop)
 
-export const GameCanvas = ({ 
-  gameState, 
-  onCollision, 
-  caffeine, 
-  score, 
-  distance, 
-  onGameStateChange 
+export const GameCanvas = ({
+  gameState,
+  onCollision,
+  caffeine,
+  score,
+  distance,
+  onGameStateChange,
+  baseSpeed,
 }: GameCanvasProps) => {
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const [carLane, setCarLane] = useState(1); // 0 = top, 1 = middle, 2 = bottom
@@ -44,11 +44,16 @@ export const GameCanvas = ({
   const [gameTime, setGameTime] = useState(0);
   const [carDriftAnim, setCarDriftAnim] = useState('');
   const [isPaused, setIsPaused] = useState(false);
-  
+
+  const entitiesRef = useRef(entities);
+  useEffect(() => {
+    entitiesRef.current = entities;
+  }, [entities]);
+
   const isMobile = useIsMobile();
-  const gameSpeed = GAME_SPEED_BASE + (caffeine * 0.01); // Slower progression
+  const gameSpeed = baseSpeed + (caffeine * 0.01); // Slower progression
   const { toast } = useToast();
-  
+
   // Unified position calculations - use SAME logic for rendering AND collision
   const getCarPosition = () => {
     if (isMobile) {
@@ -77,9 +82,9 @@ export const GameCanvas = ({
     if (typeof window !== 'undefined') {
       const screenWidth = window.innerWidth;
       const positions = [
-        screenWidth * 0.2, 
-        screenWidth * 0.4, 
-        screenWidth * 0.6, 
+        screenWidth * 0.2,
+        screenWidth * 0.4,
+        screenWidth * 0.6,
         screenWidth * 0.8
       ];
       return positions[laneIndex];
@@ -90,7 +95,7 @@ export const GameCanvas = ({
   // Handle keyboard input
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (gameState !== 'playing') return;
-    
+
     const key = event.key.toLowerCase();
     if (isMobile) {
       // Mobile: left/right controls
@@ -118,19 +123,19 @@ export const GameCanvas = ({
   const handleTouchMove = useCallback((event: TouchEvent) => {
     if (gameState !== 'playing') return;
     event.preventDefault();
-    
+
     const touch = event.touches[0];
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     if (isMobile) {
       // Mobile: horizontal lanes (left/right)
       const touchX = touch.clientX - rect.left;
       const canvasWidth = rect.width;
-      
+
       const newLane = Math.floor((touchX / canvasWidth) * 4);
       const clampedLane = Math.max(0, Math.min(3, newLane));
-      
+
       if (clampedLane !== carLane) {
         setCarLane(clampedLane);
       }
@@ -138,10 +143,10 @@ export const GameCanvas = ({
       // Desktop: vertical lanes (up/down)
       const touchY = touch.clientY - rect.top;
       const canvasHeight = rect.height;
-      
+
       const newLane = Math.floor((touchY / canvasHeight) * 4);
       const clampedLane = Math.max(0, Math.min(3, newLane));
-      
+
       if (clampedLane !== carLane) {
         setCarLane(clampedLane);
       }
@@ -151,10 +156,10 @@ export const GameCanvas = ({
   // Spawn entities
   const spawnEntity = useCallback(() => {
     if (gameState !== 'playing') return;
-    
+
     const shouldSpawnBean = Math.random() < 0.4; // 40% chance for bean, 60% for pothole
     const randomLane = Math.floor(Math.random() * 4);
-    
+
     const newEntity: GameEntity = {
       id: `${Date.now()}-${Math.random()}`,
       x: isMobile ? getMobileLaneX(randomLane) : 800, // Mobile: spawn in lane X, Desktop: spawn off-screen right
@@ -162,83 +167,84 @@ export const GameCanvas = ({
       lane: randomLane,
       type: shouldSpawnBean ? 'bean' : 'pothole'
     };
-    
+
     setEntities(prev => [...prev, newEntity]);
   }, [gameState, isMobile]);
 
   // Game loop
   const gameLoop = useCallback(() => {
     if (gameState !== 'playing' || isPaused) return;
-    
+
     setGameTime(prev => prev + 1);
     setRoadOffset(prev => (prev + gameSpeed) % 200);
-    
-    // Move entities and check collisions separately
-    setEntities(prev => {
-      // First, move all entities
-      const movedEntities = prev.map(entity => ({
-        ...entity,
-        x: isMobile ? entity.x : entity.x - gameSpeed * 3, // Desktop: move left, Mobile: stay in lane
-        y: isMobile ? entity.y + gameSpeed * 3 : entity.y  // Mobile: move down, Desktop: stay in lane
-      })).filter(entity => 
-        isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50 // Remove off-screen entities
+
+    const carPos = getCarPosition();
+
+    // Move entities
+    const movedEntities = entitiesRef.current.map(entity => ({
+      ...entity,
+      x: isMobile ? entity.x : entity.x - gameSpeed * 3,
+      y: isMobile ? entity.y + gameSpeed * 3 : entity.y
+    })).filter(entity =>
+      isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50
+    );
+
+    // Check for collisions
+    let collidedEntity = null;
+    for (const entity of movedEntities) {
+      if (entity.lane !== carLane) continue;
+
+      const isEntityVisible = isMobile
+        ? (entity.y > 0 && entity.y < window.innerHeight)
+        : (entity.x > 0 && entity.x < 800);
+
+      if (!isEntityVisible) continue;
+
+      const carSize = { width: 60, height: 48 };
+      const entitySize = { width: 32, height: 32 };
+      const carCollisionOffset = 30;
+
+      const carBounds = {
+        left: carPos.x - carSize.width / 2 + carCollisionOffset,
+        right: carPos.x + carSize.width / 2 + carCollisionOffset,
+        top: carPos.y - carSize.height / 2,
+        bottom: carPos.y + carSize.height / 2
+      };
+
+      const entityBounds = {
+        left: entity.x - entitySize.width / 2,
+        right: entity.x + entitySize.width / 2,
+        top: entity.y - entitySize.height / 2,
+        bottom: entity.y + entitySize.height / 2
+      };
+
+      const isOverlapping = !(
+        carBounds.right < entityBounds.left ||
+        carBounds.left > entityBounds.right ||
+        carBounds.bottom < entityBounds.top ||
+        carBounds.top > entityBounds.bottom
       );
-      
-      // Then check collisions - ONLY for entities that are actually visible on screen
-      const carPos = getCarPosition();
-      let hasCollision = false;
-      let collisionEntity = null;
-      
-      for (const entity of movedEntities) {
-        // Only check entities in the same lane
-        if (entity.lane !== carLane) continue;
-        
-        // CRITICAL: Only check entities that are actually on screen and visible
-        const isEntityVisible = isMobile 
-          ? (entity.y > 0 && entity.y < window.innerHeight) // Mobile: check if Y is on screen
-          : (entity.x > 0 && entity.x < 800); // Desktop: check if X is on screen
-        
-        if (!isEntityVisible) continue; // Skip off-screen entities
-        
-        // Very tight proximity check - only when they're almost touching
-        const proximityThreshold = 25; // Much tighter threshold
-        let isNear = false;
-        
-        if (isMobile) {
-          // Mobile: check Y distance (entity moves down toward car)
-          isNear = Math.abs(entity.y - carPos.y) < proximityThreshold;
-        } else {
-          // Desktop: check X distance (entity moves left toward car)  
-          isNear = Math.abs(entity.x - carPos.x) < proximityThreshold;
-        }
-        
-        if (isNear) {
-          if (entity.type === 'pothole') {
-            onCollision(entity.type);
-            return movedEntities.filter(e => e.id !== entity.id);
-          } else {
-            onCollision(entity.type);
-            return movedEntities.filter(e => e.id !== entity.id);
-          }
-        }
+
+      if (isOverlapping) {
+        collidedEntity = entity;
+        break;
       }
-      
-      return movedEntities;
-    });
-    
+    }
+
+    if (collidedEntity) {
+      onCollision(collidedEntity.type);
+      setEntities(prev => prev.filter(e => e.id !== collidedEntity.id));
+    } else {
+      setEntities(movedEntities);
+    }
+
     // Spawn new entities
     if (gameTime % 45 === 0) { // Spawn every ~0.75 seconds at 60fps
       spawnEntity();
     }
-    
-    // Check win condition
-    if (caffeine >= 100) {
-      onGameStateChange('victory');
-      return;
-    }
-    
+
     animationRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState, gameSpeed, gameTime, carLane, onCollision, spawnEntity, caffeine, onGameStateChange, isPaused]);
+  }, [gameState, gameSpeed, gameTime, carLane, onCollision, spawnEntity, caffeine, onGameStateChange, isPaused, isMobile]);
 
   // Initialize game loop
   useEffect(() => {
@@ -249,7 +255,7 @@ export const GameCanvas = ({
         cancelAnimationFrame(animationRef.current);
       }
     }
-    
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -273,12 +279,12 @@ export const GameCanvas = ({
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
     const canvas = canvasRef.current;
-    
+
     if (canvas) {
       canvas.addEventListener('touchstart', handleTouchStart);
       canvas.addEventListener('touchmove', handleTouchMove);
     }
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
       if (canvas) {
@@ -296,10 +302,10 @@ export const GameCanvas = ({
       {/* Road lanes */}
       <div className="absolute inset-0">
         {/* Road lines */}
-        <div 
+        <div
           className="absolute top-0 left-0 w-full h-full opacity-20"
           style={{
-            backgroundImage: isMobile 
+            backgroundImage: isMobile
               ? `repeating-linear-gradient(
                   0deg,
                   transparent,
@@ -314,12 +320,12 @@ export const GameCanvas = ({
                   hsl(var(--primary) / 0.3) 40px,
                   hsl(var(--primary) / 0.3) 44px
                 )`,
-            transform: isMobile 
-              ? `translateY(-${roadOffset}px)` 
+            transform: isMobile
+              ? `translateY(-${roadOffset}px)`
               : `translateX(-${roadOffset}px)`
           }}
         />
-        
+
         {/* Lane dividers */}
         {isMobile ? (
           // Mobile: 3 vertical lane dividers creating 4 equal lanes
@@ -377,11 +383,11 @@ export const GameCanvas = ({
             } : {
               left: `${carPos.x}px`,
               top: `${carPos.y}px`,
-              transform: `translateY(-50%)`
+              transform: `translate(-50%, -50%)` // Changed: now centers both horizontally and vertically on desktop too
             };
           })()}
         >
-          <img 
+          <img
             src={orangeLamboImage}
             alt="Orange Lamborghini"
             className="object-contain drop-shadow-lg"
@@ -394,24 +400,24 @@ export const GameCanvas = ({
               maxWidth: '60px' // Prevent growing
             }}
           />
-          
+
           {/* Exhaust effect when speeding */}
           {gameSpeed > 4 && (
             <div className={cn(
               "absolute w-12 h-2",
-              isMobile 
-                ? "top-8 left-1/2 -translate-x-1/2 rotate-90 w-2 h-12" 
+              isMobile
+                ? "top-8 left-1/2 -translate-x-1/2 rotate-90 w-2 h-12"
                 : "-left-6 top-1/2 -translate-y-1/2"
             )}>
               <div className={cn(
                 "w-full h-full rounded-full animate-pulse",
-                isMobile 
+                isMobile
                   ? "bg-gradient-to-t from-primary/60 to-transparent"
                   : "bg-gradient-to-l from-primary/60 to-transparent"
               )} />
               <div className={cn(
                 "absolute inset-0 rounded-full animate-pulse delay-100",
-                isMobile 
+                isMobile
                   ? "bg-gradient-to-t from-secondary/40 to-transparent"
                   : "bg-gradient-to-l from-secondary/40 to-transparent"
               )} />
@@ -425,9 +431,9 @@ export const GameCanvas = ({
         <div
           key={entity.id}
           className={cn(
-            "absolute w-8 h-8 rounded transition-all duration-100",
-            entity.type === 'bean' 
-              ? "bg-coffee-light shadow-sm" 
+            "absolute w-8 h-8 rounded",
+            entity.type === 'bean'
+              ? "bg-coffee-light shadow-sm"
               : "bg-destructive shadow-md border border-destructive-foreground"
           )}
           style={{
@@ -452,7 +458,7 @@ export const GameCanvas = ({
             <div className="text-sm opacity-80">Distance</div>
             <div className="text-lg font-bold">{Math.floor(distance)}m</div>
           </div>
-          
+
           <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-primary/30">
             <div className="text-sm opacity-80">Score</div>
             <div className="text-lg font-bold">{score}</div>
@@ -464,8 +470,8 @@ export const GameCanvas = ({
       {gameState === 'playing' && (
         <div className={cn(
           "absolute z-10",
-          isMobile 
-            ? "bottom-20 left-1/2 -translate-x-1/2 w-48" 
+          isMobile
+            ? "bottom-20 left-1/2 -translate-x-1/2 w-48"
             : "bottom-4 left-4 w-48"
         )}>
           <div className="bg-card/80 backdrop-blur-sm rounded-lg px-3 py-1 border border-primary/30">
@@ -474,7 +480,7 @@ export const GameCanvas = ({
               <span className="text-xs font-bold">{caffeine}%</span>
             </div>
             <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-speed transition-all duration-300 ease-out shadow-glow"
                 style={{ width: `${caffeine}%` }}
               />

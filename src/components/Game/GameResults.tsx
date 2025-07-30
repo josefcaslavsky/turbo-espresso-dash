@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Trophy, RotateCcw, Home, Zap, Coffee, Star } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Home, RotateCcw, Star } from "lucide-react";
 import taylorImage from "/lovable-uploads/c0bd7a00-4d8d-421b-9b84-7a6fee320559.png";
 
 interface GameResultsProps {
@@ -14,17 +14,17 @@ interface GameResultsProps {
   onGoHome: () => void;
 }
 
-export const GameResults = ({ 
-  isVictory, 
-  score, 
-  distance, 
-  beansCollected, 
+export const GameResults = ({
+  isVictory,
+  score,
+  distance,
+  beansCollected,
   maxSpeed,
   isNewBest,
-  onPlayAgain, 
-  onGoHome 
+  onPlayAgain,
+  onGoHome,
 }: GameResultsProps) => {
-  const distancePoints = Math.floor(distance);
+  const finalDistance = Math.floor(distance);
   const beanBonus = beansCollected * 50;
   const speedBonus = Math.floor(maxSpeed / 10);
 
@@ -55,7 +55,7 @@ export const GameResults = ({
             <>
               <div className="flex justify-center mb-4">
                 <div className="relative">
-                  <img 
+                  <img
                     src={taylorImage}
                     alt="Taylor celebrating"
                     className="w-32 h-32 object-cover rounded-full border-4 border-victory-gold shadow-glow animate-bounce-in"
@@ -102,59 +102,57 @@ export const GameResults = ({
 
         {/* Score Breakdown */}
         <Card className="bg-card/50 backdrop-blur-sm border-primary/30 p-6 mb-6">
-          <h3 className="text-xl font-bold text-foreground mb-4 flex items-center justify-center gap-2">
-            <Trophy className="w-5 h-5 text-victory-gold" />
-            PERFORMANCE REPORT
-          </h3>
-          
-          <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Distance Covered</span>
-              <span className="font-bold text-primary">{Math.floor(distance)}m × 1 = {distancePoints} pts</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground flex items-center gap-1">
-                <Coffee className="w-4 h-4 text-coffee" />
-                Beans Collected
-              </span>
-              <span className="font-bold text-coffee-light">{beansCollected} × 50 = {beanBonus} pts</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground flex items-center gap-1">
-                <Zap className="w-4 h-4 text-secondary" />
-                Max Speed Bonus
-              </span>
-              <span className="font-bold text-secondary">{Math.floor(maxSpeed)} ÷ 10 = {speedBonus} pts</span>
-            </div>
-            
-            <div className="border-t border-primary/20 pt-3 mt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-foreground">TOTAL SCORE</span>
-                <span className="text-2xl font-bold bg-gradient-turbo bg-clip-text text-transparent">
-                  {score}
-                </span>
+          <CardHeader>
+            <CardTitle className="text-4xl text-center">
+              {isVictory ? "Caffeine Delivered!" : "Game Over"}
+            </CardTitle>
+            <CardDescription className="text-center">
+              {isVictory
+                ? "Perfect espresso delivered! ☕"
+                : "Pothole got the best of you..."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col items-center">
+                <p className="text-sm text-muted-foreground">Beans</p>
+                <p className="text-4xl font-bold">{beansCollected}</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <p className="text-sm text-muted-foreground">Distance</p>
+                <p className="text-4xl font-bold">{finalDistance}m</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <p className="text-sm text-muted-foreground">Max Speed</p>
+                <p className="text-4xl font-bold">{Math.floor(maxSpeed)}</p>
               </div>
             </div>
-          </div>
+          </CardContent>
+          <CardFooter className="flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-bold text-foreground">TOTAL SCORE</span>
+              <span className="text-2xl font-bold bg-gradient-turbo bg-clip-text text-transparent">
+                {score}
+              </span>
+            </div>
+          </CardFooter>
         </Card>
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <Button 
-            variant="turbo" 
-            size="lg" 
+          <Button
+            variant="turbo"
+            size="lg"
             onClick={onPlayAgain}
             className="flex-1"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
             DRIVE AGAIN
           </Button>
-          
-          <Button 
-            variant="game" 
-            size="lg" 
+
+          <Button
+            variant="game"
+            size="lg"
             onClick={onGoHome}
             className="flex-1"
           >
@@ -165,8 +163,8 @@ export const GameResults = ({
 
         {/* Motivational message */}
         <p className="text-sm text-muted-foreground mt-6 opacity-70">
-          {isVictory 
-            ? "Want to go even faster? Try collecting more beans!" 
+          {isVictory
+            ? "Want to go even faster? Try collecting more beans!"
             : "Every crash teaches you something. Keep practicing!"}
         </p>
       </div>
