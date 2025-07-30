@@ -80,12 +80,12 @@ export const GameCanvas = ({
   // Calculate mobile lane X positions dynamically
   const getMobileLaneX = (laneIndex: number) => {
     if (typeof window !== 'undefined') {
-      const screenWidth = window.innerWidth;
+      const screenWidth = document.documentElement.clientWidth;
       const positions = [
-        screenWidth * 0.2,
-        screenWidth * 0.4,
-        screenWidth * 0.6,
-        screenWidth * 0.8
+        screenWidth * 0.125,
+        screenWidth * 0.375,
+        screenWidth * 0.625,
+        screenWidth * 0.875
       ];
       return positions[laneIndex];
     }
@@ -311,14 +311,14 @@ export const GameCanvas = ({
                   transparent,
                   transparent 40px,
                   hsl(var(--primary) / 0.3) 40px,
-                  hsl(var(--primary) / 0.3) 44px
+                  hsl(var(--primary) / 0.3) 42px
                 )`
               : `repeating-linear-gradient(
                   90deg,
                   transparent,
                   transparent 40px,
                   hsl(var(--primary) / 0.3) 40px,
-                  hsl(var(--primary) / 0.3) 44px
+                  hsl(var(--primary) / 0.3) 42px
                 )`,
             transform: isMobile
               ? `translateY(-${roadOffset}px)`
@@ -333,7 +333,7 @@ export const GameCanvas = ({
             <div
               key={index}
               className="absolute h-full border-l-2 border-dashed border-primary/40"
-              style={{ left: `${position}%` }}
+              style={{ left: `calc(${position}% - 1px)` }}
             />
           ))
         ) : (
@@ -342,7 +342,7 @@ export const GameCanvas = ({
             <div
               key={index}
               className="absolute w-full border-t-2 border-dashed border-primary/40"
-              style={{ top: `${LANE_POSITIONS[index] + 30}px` }}
+              style={{ top: `calc(${LANE_POSITIONS[index] + 30}px - 1px)` }}
             />
           ))
         )}
