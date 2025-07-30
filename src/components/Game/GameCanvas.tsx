@@ -436,8 +436,37 @@ export const GameCanvas = ({
           {entity.type === 'pothole' && (
             <div className="w-full h-full bg-destructive/80 rounded-full border-2 border-destructive-foreground" />
           )}
+          
+          {/* Visual collision box for debugging */}
+          {isPaused && (
+            <div 
+              className="absolute border-2 border-yellow-400 bg-yellow-400/20"
+              style={{
+                left: '-12px',
+                top: '-12px', 
+                width: '24px',
+                height: '24px'
+              }}
+            />
+          )}
         </div>
       ))}
+
+      {/* Car collision box for debugging */}
+      {gameState === 'playing' && isPaused && (
+        <div
+          className="absolute border-2 border-red-400 bg-red-400/20"
+          style={(() => {
+            const carPos = getCarPosition();
+            return {
+              left: `${carPos.x - 25}px`,
+              top: `${carPos.y - 25}px`,
+              width: '50px',
+              height: '50px'
+            };
+          })()}
+        />
+      )}
 
       {/* UI Overlay */}
       {gameState === 'playing' && (
