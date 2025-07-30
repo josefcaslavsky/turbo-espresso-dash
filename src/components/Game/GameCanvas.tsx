@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import orangeLamboImage from "@/assets/orange-lambo-realistic.png";
+import orangeLamboImage from "@/assets/orange-lambo.png";
 import coffeeBeanImage from "@/assets/coffee-bean.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
@@ -214,10 +214,13 @@ export const GameCanvas = ({
         
         if (isNear) {
           if (entity.type === 'pothole') {
-            onCollision(entity.type);
-            return movedEntities.filter(e => e.id !== entity.id);
+            setIsPaused(true);
+            hasCollision = true;
+            collisionEntity = entity;
+            break;
           } else {
             onCollision(entity.type);
+            // Remove bean
             return movedEntities.filter(e => e.id !== entity.id);
           }
         }
