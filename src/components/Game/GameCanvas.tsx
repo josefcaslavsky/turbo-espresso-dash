@@ -175,9 +175,10 @@ export const GameCanvas = ({
     setGameTime(prev => prev + 1);
     setRoadOffset(prev => (prev + gameSpeed) % 200);
     
-    // Move entities
+    // Move entities and check collisions separately
     setEntities(prev => {
-      const updatedEntities = prev.map(entity => ({
+      // First, move all entities
+      const movedEntities = prev.map(entity => ({
         ...entity,
         x: isMobile ? entity.x : entity.x - gameSpeed * 3, // Desktop: move left, Mobile: stay in lane
         y: isMobile ? entity.y + gameSpeed * 3 : entity.y  // Mobile: move down, Desktop: stay in lane
@@ -185,38 +186,43 @@ export const GameCanvas = ({
         isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50 // Remove off-screen entities
       );
       
-      // Check collisions with simplified logic
-      updatedEntities.forEach(entity => {
-        if (entity.lane !== carLane) return; // Only check same lane
+      // Then check collisions - ONLY lane-based for now to simplify
+      const carPos = getCarPosition();
+      let hasCollision = false;
+      let collisionEntity = null;
+      
+      for (const entity of movedEntities) {
+        // Only check entities in the same lane
+        if (entity.lane !== carLane) continue;
         
-        // Use the SAME position calculation for both rendering and collision
-        const carPos = getCarPosition();
+        // Simple proximity check - much tighter bounds
+        const proximityThreshold = isMobile ? 40 : 30; // Pixels
+        let isNear = false;
         
-        // Simple distance check first
-        const distance = Math.abs(entity.y - carPos.y);
-        if (distance > 30) return; // Only check when close
+        if (isMobile) {
+          // Mobile: check Y distance (entity moves down toward car)
+          isNear = Math.abs(entity.y - carPos.y) < proximityThreshold;
+        } else {
+          // Desktop: check X distance (entity moves left toward car)
+          isNear = Math.abs(entity.x - carPos.x) < proximityThreshold;
+        }
         
-        // Simple bounding box collision
-        const carSize = 25; // Half the car size
-        const entitySize = 12; // Half the entity size
-        
-        const isOverlapping = 
-          Math.abs(entity.x - carPos.x) < (carSize + entitySize) &&
-          Math.abs(entity.y - carPos.y) < (carSize + entitySize);
-        
-        if (isOverlapping) {
+        if (isNear) {
           if (entity.type === 'pothole') {
-            setDebugInfo(`COLLISION! Car: (${Math.round(carPos.x)}, ${Math.round(carPos.y)}) | Entity: (${Math.round(entity.x)}, ${Math.round(entity.y)}) | Distance: ${Math.round(distance)}px`);
+            setDebugInfo(`COLLISION! Car lane ${carLane} at (${Math.round(carPos.x)}, ${Math.round(carPos.y)}) | Entity lane ${entity.lane} at (${Math.round(entity.x)}, ${Math.round(entity.y)})`);
             setIsPaused(true);
-            return; // Keep entity visible for debugging
+            hasCollision = true;
+            collisionEntity = entity;
+            break;
           } else {
             onCollision(entity.type);
-            setEntities(current => current.filter(e => e.id !== entity.id));
+            // Remove bean
+            return movedEntities.filter(e => e.id !== entity.id);
           }
         }
-      });
+      }
       
-      return updatedEntities;
+      return movedEntities;
     });
     
     // Spawn new entities
