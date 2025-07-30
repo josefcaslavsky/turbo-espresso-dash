@@ -214,13 +214,10 @@ export const GameCanvas = ({
         
         if (isNear) {
           if (entity.type === 'pothole') {
-            setIsPaused(true);
-            hasCollision = true;
-            collisionEntity = entity;
-            break;
+            onCollision(entity.type);
+            return movedEntities.filter(e => e.id !== entity.id);
           } else {
             onCollision(entity.type);
-            // Remove bean
             return movedEntities.filter(e => e.id !== entity.id);
           }
         }
