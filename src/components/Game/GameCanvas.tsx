@@ -186,7 +186,7 @@ export const GameCanvas = ({
         isMobile ? entity.y < getCarYMobile() + 100 : entity.x > -50 // Remove off-screen entities
       );
       
-      // Then check collisions - ONLY lane-based for now to simplify
+      // Then check collisions - ONLY for entities that are actually visible on screen
       const carPos = getCarPosition();
       let hasCollision = false;
       let collisionEntity = null;
@@ -195,15 +195,22 @@ export const GameCanvas = ({
         // Only check entities in the same lane
         if (entity.lane !== carLane) continue;
         
-        // Simple proximity check - much tighter bounds
-        const proximityThreshold = isMobile ? 40 : 30; // Pixels
+        // CRITICAL: Only check entities that are actually on screen and visible
+        const isEntityVisible = isMobile 
+          ? (entity.y > 0 && entity.y < window.innerHeight) // Mobile: check if Y is on screen
+          : (entity.x > 0 && entity.x < 800); // Desktop: check if X is on screen
+        
+        if (!isEntityVisible) continue; // Skip off-screen entities
+        
+        // Very tight proximity check - only when they're almost touching
+        const proximityThreshold = 25; // Much tighter threshold
         let isNear = false;
         
         if (isMobile) {
           // Mobile: check Y distance (entity moves down toward car)
           isNear = Math.abs(entity.y - carPos.y) < proximityThreshold;
         } else {
-          // Desktop: check X distance (entity moves left toward car)
+          // Desktop: check X distance (entity moves left toward car)  
           isNear = Math.abs(entity.x - carPos.x) < proximityThreshold;
         }
         
